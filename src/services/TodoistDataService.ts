@@ -1,8 +1,7 @@
 import axios from "axios";
 
 class TodoistDataService {
-  private url = process.env.VUE_APP_TODOIST_API_BASE_URL;
-  private token = process.env.VUE_APP_TODOIST_API_USER_TOKEN;
+  private url = process.env.VUE_APP_BASE_URL;
 
   /**
    * Returns all active Todo Items
@@ -11,14 +10,7 @@ class TodoistDataService {
    * @memberof TodoistDataService
    */
   getItems() {
-    return axios
-      .create({
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + this.token
-        }
-      })
-      .get(`${this.url}/tasks`);
+    return axios.get(`${this.url}/todo`);
   }
 
   /**
@@ -29,15 +21,18 @@ class TodoistDataService {
    * @memberof TodoistDataService
    */
   closeItem(id: string) {
-    return axios
-      .create({
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + this.token
-        },
-        method: "post"
-      })
-      .post(`${this.url}/tasks/${id}/close`, {});
+    return axios.post(`${this.url}/todo/${id}/close`, {});
+  }
+
+  /**
+   * Returns a Todo Item by id
+   *
+   * @param {string} id The ID of the Todo Item
+   * @returns {AxiosStatic} Axios call promise
+   * @memberof TodoistDataService
+   */
+  getItem(id: string) {
+    return axios.get(`${this.url}/todo/${id}`, {});
   }
 }
 

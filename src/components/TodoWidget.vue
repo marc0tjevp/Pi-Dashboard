@@ -17,7 +17,10 @@
               >
               </b-icon>
             </td>
-            <td>{{ item.content }}</td>
+            <td>
+              {{ item.content }}
+              <span class="float-right" v-html="renderDueDateBadge(item)" />
+            </td>
           </tr>
           <tr v-for="item in completedItems" :key="item.id">
             <td>
@@ -45,7 +48,12 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { getCurrentTime } from "../helpers";
+import {
+  getCurrentTime,
+  getCurrentISODate,
+  formatTodoDate,
+  isBefore
+} from "../helpers";
 
 import { TodoItem } from "../types/Todo.types";
 import TodoistDataService from "../services/TodoistDataService";
@@ -54,6 +62,7 @@ import TodoistDataService from "../services/TodoistDataService";
 export default class TodoWidget extends Vue {
   private items: TodoItem[] = [];
   private completedItems: TodoItem[] = [];
+  private detailedItems: TodoItem[] = [];
   private lastRefresh = "";
 
   closeItem(item: TodoItem) {
@@ -72,8 +81,43 @@ export default class TodoWidget extends Vue {
       .then(result => {
         this.items = result.data;
         this.lastRefresh = getCurrentTime();
+        this.items.map(i => {
+          this.getItem(i);
+        });
       })
       .catch(() => this.createToast("Unable to fetch Todo Items", "error"));
+  }
+
+  getItem(item: TodoItem) {
+    TodoistDataService.getItem(item.id)
+      .then(result => {
+        this.detailedItems.push(result.data);
+      })
+      .catch(() => this.createToast("Unable to fetch Todo Item", "error"));
+  }
+
+  getDueDate(item: TodoItem) {
+    return this.detailedItems.find(i => i.id === item.id)?.due?.date ?? "";
+  }
+
+  renderDueDateBadge(item: TodoItem) {
+    const dueDate = this.getDueDate(item);
+    if (dueDate) {
+      return `<span class="badge badge-${this.getDueDateBadgeVariant(
+        dueDate
+      )}">${formatTodoDate(dueDate)}</span>`;
+    }
+    return "";
+  }
+
+  getDueDateBadgeVariant(date: string) {
+    if (date == getCurrentISODate()) {
+      return "warning";
+    } else if (isBefore(date, getCurrentISODate())) {
+      return "danger";
+    } else {
+      return "info";
+    }
   }
 
   createToast(text: string, type: string) {
@@ -86,6 +130,7 @@ export default class TodoWidget extends Vue {
 
   mounted() {
     this.getItems();
+    console.dir(this.detailedItems);
 
     setInterval(() => {
       this.getItems();
