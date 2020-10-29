@@ -1,10 +1,7 @@
 import axios from "axios";
 
 class WakaTimeDataService {
-  private proxyUrl = process.env.VUE_APP_PROXY_API_URL;
-  private url = process.env.VUE_APP_WAKATIME_API_BASE_URL;
-  private token = process.env.VUE_APP_WAKATIME_API_USER_TOKEN;
-  private username = process.env.VUE_APP_WAKATIME_API_USER_USERNAME;
+  private url = process.env.VUE_APP_BASE_URL;
 
   /**
    * Returns user info from WakaTime
@@ -13,14 +10,7 @@ class WakaTimeDataService {
    * @memberof WakaTimeDataService
    */
   getUserInfo() {
-    return axios
-      .create({
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Basic " + this.token
-        }
-      })
-      .get(`${this.proxyUrl}${this.url}/users/${this.username}`);
+    return axios.get(`${this.url}/code/user`);
   }
 
   /**
@@ -31,13 +21,7 @@ class WakaTimeDataService {
    */
   getCodingStats() {
     return axios
-      .create({
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Basic " + this.token
-        }
-      })
-      .get(`${this.proxyUrl}${this.url}/users/${this.username}/stats/last_7_days`);
+      .get(`${this.url}/code/stats`);
   }
 }
 
